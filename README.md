@@ -1,4 +1,4 @@
-# Capstone Project: Optimizing E-Commerce Strategy with Customer Segmentation and Predictive Analytics
+# Optimizing E-Commerce Strategy with Customer Segmentation and Predictive Analytics
 
 ## Project Overview
 E-commerce businesses face challenges in improving customer retention, boosting sales, and personalizing marketing strategies. Without data-driven insights, decisions are often reactive and inefficient.  
@@ -93,7 +93,7 @@ Random Forest Classifier was chosen for prediction tasks. It balances strong acc
 ### Target Variables
 1. **Repeat Buyer** – 1 if >1 order, else 0.  
 2. **High-Value Customer** – 1 if in top 20% of spenders.  
-3. **Churn Risk** – 1 if no purchase in last 90 days, else 0.  
+3. **Churn Risk** – 1 if no purchase in last 120 days, else 0.  
 
 ### Results
 
