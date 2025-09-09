@@ -3,15 +3,17 @@
 ## Project Overview
 E-commerce businesses face challenges in improving customer retention, boosting sales, and personalizing marketing strategies. Without data-driven insights, decisions are often reactive and inefficient.  
 
-This project uses data from Google BigQuery’s `thelook_ecommerce` dataset to:  
+This project applies advanced analytics on Google BigQuery’s **`thelook_ecommerce` public dataset** to:  
 1. Segment customers based on purchase behavior and demographics.  
-2. Predict key customer behaviors such as repeat buying, high-value potential, and churn risk.  
-3. Provide actionable business recommendations to improve marketing and product strategies.  
+2. Predict key outcomes such as repeat buying, high-value potential, and churn risk.  
+3. Provide actionable recommendations to guide marketing and product strategies.  
 
 ---
 
 ## Dataset Overview
-The following tables were merged into a single analytical dataset (`merged_df`):  
+The data was sourced from **Google BigQuery – `thelook_ecommerce` public dataset**, which simulates an e-commerce platform.  
+
+The following tables were merged into a single analytical dataset:  
 - **users** – customer demographics  
 - **orders** – transaction history and status  
 - **order_items** – item-level purchase details  
@@ -19,49 +21,51 @@ The following tables were merged into a single analytical dataset (`merged_df`):
 - **inventory_items** – inventory and cost metadata  
 - **distribution_centers** – logistics information  
 
-After cleaning and merging, we created a **customer-level dataset** (`customer_df`) containing key engineered features.
+After cleaning and merging, a **customer-level dataset** was created containing key behavioral and demographic features.
 
 ---
 
 ## Feature Engineering
 Derived features included:  
-- **Recency**: Days since the last order (`recency_days`)  
-- **Frequency**: Number of orders per user (`num_orders`)  
-- **Monetary Value**: Total customer spend (`total_spent`)  
-- **Average Order Value (AOV)**: `avg_order_value`  
-- **Return Rate**: Ratio of returned orders to total orders (`return_rate`)  
-- **Preferred Category and Brand**: Most common purchase behavior  
+- **Recency** (`recency_days`) – days since last purchase  
+- **Frequency** (`num_orders`) – total orders per customer  
+- **Monetary Value** (`total_spent`) – total spend per customer  
+- **Average Order Value (AOV)** – mean order size  
+- **Return Rate** – ratio of returned to completed orders  
+- **Preferred Category & Brand** – most frequent purchase behavior  
 
-These features were necessary to enable both **segmentation (unsupervised learning)** and **prediction (supervised learning)**.
+These features formed the basis for both **segmentation** and **predictive modeling**.
 
 ---
 
 ## Exploratory Data Analysis (EDA)
 
 ### Customer Demographics
-- **Age distribution**: Majority of customers are between 20–29 years old.  
-- **Gender distribution**: Visualized with bar and pie charts.  
+- Majority of customers are between **20–29 years old**.  
+- Gender split shows a balanced customer base.  
 
 ### Purchase Behavior
-- **Order frequency per user**: Most customers make only 1 order, highlighting the challenge of retention.  
-- **Total spend distribution**: A small fraction of customers contribute disproportionately to revenue (top 5%).  
-- **Repeat vs One-time buyers**: Approx 37% are repeat buyers, while 63% are one-time buyers.  
-- **New vs Returning customers (monthly)**: Returning customers contribute consistently to sales, but new customer acquisition is also strong.  
+- Most customers make only **one order**, underscoring the retention challenge.  
+- Approx **37% are repeat buyers**, while 63% are one-time buyers.  
+- Total spend distribution indicates that the **top 5% of customers drive a disproportionate share of revenue**.  
 
 ### Product Insights
-- **Top products by gender**: Identified distinct preferences among male and female buyers.  
-- **Return rates by product category**: Certain categories such as *Jumpsuits & Rompers* and *Intimates* have high return rates.  
-- **Product velocity**: Average of approx 30 days between inventory creation and sale, with variation across categories.  
-- **Delivery performance**: Majority of orders are delivered within 48 hours, supporting marketing promises of 1–2 day delivery.  
+- **Jumpsuits & Rompers**: high sales volume but also **one of the highest return rates**, highlighting a profitability issue despite popularity.  
+- **Intimates**: large share of sales, but also prone to high return rates.  
+- **Accessories**: strong representation among high-value customers.  
+
+### Operations
+- **Product Velocity**: On average, products sold in approx 30 days after inventory creation. Some categories moved faster, others slower.  
+- **Delivery Performance**: Majority of products delivered within **48 hours**, enabling a competitive marketing promise of 1–2 day delivery.  
 
 ---
 
 ## Customer Segmentation (Unsupervised Learning)
 
 ### Method
-- Applied **KMeans clustering** on standardized behavioral features.  
-- Optimal number of clusters selected using **Elbow Method** and **Silhouette Score**.  
-- Final choice: **k = 4 clusters** for interpretability and business relevance.  
+- Applied **KMeans clustering** on standardized features.  
+- Optimal number of clusters determined using **Elbow Method** and **Silhouette Score**.  
+- Final segmentation: **k = 4 clusters**.  
 
 ### Cluster Profiles
 | Cluster | Customer Count | Avg Orders | Avg Spend | Avg Recency (days) | Avg Return Rate | Top Category | Top Brand |
@@ -72,65 +76,98 @@ These features were necessary to enable both **segmentation (unsupervised learni
 | 1       | 41,629         | 1.34       | 80.30     | 273                 | 0.02            | Intimates    | Allegra K |
 
 ### Segment Interpretation
-- **Cluster 2 – High-Value Buyers**: Most profitable, moderate recency, worth prioritizing with loyalty programs.  
-- **Cluster 0 – High Returners**: Low spend, extremely high return rates, potentially unprofitable.  
-- **Cluster 3 – Lost Customers**: Very long recency, low spend, largely dormant.  
-- **Cluster 1 – Low-Spend One-Timers**: Largest group, low spend and order frequency, growth potential if converted.  
+- **Cluster 2 – High-Value Buyers**: Most profitable, multiple purchases, moderate recency. Ideal for loyalty and upselling campaigns.  
+- **Cluster 0 – High Returners**: Low spend but extremely high return rates. Potentially unprofitable, requiring review of return policies.  
+- **Cluster 3 – Lost Customers**: Very long recency and low spend. Dormant customers, low ROI for aggressive marketing.  
+- **Cluster 1 – Low-Spend One-Timers**: Largest cluster, low spend and frequency but more recent than Cluster 3. Growth opportunity if converted into repeat buyers.  
 
 ### Visualizations
-- **Heatmap of cluster profiles** (normalized features).  
-- **Radar chart** to compare behavioral “shapes” of each cluster.  
+- **Heatmap**: Highlights normalized feature differences across clusters.  
+- **Radar Chart**: Shows the relative “shapes” of each cluster’s behavioral profile.  
 
 ---
 
 ## Predictive Modeling (Supervised Learning)
+Random Forest Classifier was chosen for prediction tasks. It balances strong accuracy with interpretability, handles imbalanced data, and identifies key drivers of behavior, making it a practical and explainable model for business decision-making.
 
-Three predictive tasks were defined:  
+### Target Variables
+1. **Repeat Buyer** – 1 if >1 order, else 0.  
+2. **High-Value Customer** – 1 if in top 20% of spenders.  
+3. **Churn Risk** – 1 if no purchase in last 90 days, else 0.  
 
-### 1. Repeat Buyer Prediction
-- **Target:** 1 if >1 order, else 0.  
-- **Performance:** Accuracy ≈ 100% on test set (23,985 customers).  
-- **Top Features:** `total_spent`, `avg_order_value`.  
-- **Insight:** Spending patterns are the strongest signal for predicting repeat buyers.  
+### Results
 
-### 2. High-Value Customer Prediction
-- **Target:** 1 if in top 20% of spenders, else 0.  
-- **Performance:** Accuracy ≈ 100% on test set.  
-- **Top Features:** `avg_order_value` (67%), `num_orders` (30%).  
-- **Insight:** High-value customers are characterized by high AOV and order frequency.  
+#### 1. Repeat Buyer Prediction
+- Accuracy: ≈ 100% (test set = 23,985 customers)  
+- Misclassifications: 7 total  
+- Top Features: `total_spent`, `avg_order_value`  
+- Insight: Customers with higher spending are far more likely to become repeat buyers.  
 
-### 3. Churn Risk Prediction
-- **Target:** 1 if no purchases in last 90 days, else 0.  
-- **Performance:** Accuracy = 70%.  
-  - Recall for churned customers = 86% (strong).  
-  - Recall for active customers = 16% (weak).  
-- **Top Features:** `total_spent`, `avg_order_value`, `age`.  
-- **Insight:** Model effectively flags churned customers but struggles with active ones due to class imbalance.  
+#### 2. High-Value Customer Prediction
+- Accuracy: ≈ 100%  
+- Misclassifications: 0  
+- Top Features: `avg_order_value`, `num_orders`  
+- Insight: High-value customers are distinguished by high average order values and repeat purchases.  
+
+#### 3. Churn Risk Prediction
+- Accuracy: 70%  
+- Recall for churned customers: 86% (model flags churn well)  
+- Recall for active customers: 16% (weak at identifying active customers)  
+- Top Features: `total_spent`, `avg_order_value`, `age`  
+- Insight: Model effectively identifies churned customers but struggles with active ones due to class imbalance.  
 
 ---
 
-## Key Business Insights
+## Business Insights
 
-1. **Retention Challenge**: Majority of customers purchase only once; improving repeat purchases is critical.  
-2. **High-Value Buyers**: A small segment drives most revenue; must be prioritized with loyalty/VIP programs.  
-3. **Returns Issue**: Certain categories (e.g., Jumpsuits & Rompers, Intimates) have high return rates, affecting profitability.  
-4. **Churn Risk**: Predictive model can identify churned customers well, though further improvement is needed to identify active customers.  
-5. **Delivery Strength**: Fast delivery times (within 48 hours) are a competitive advantage and can be leveraged in marketing.  
+1. **Retention is critical**: Majority of customers are one-time buyers, making retention strategies essential.  
+2. **High-Value Customers**: A small but important group drives most revenue. Loyalty programs and personalized marketing should target them.  
+3. **Returns Challenge**: Categories like *Jumpsuits & Rompers* and *Intimates* generate high sales but also high return rates, reducing profitability. Product quality, sizing, or expectation management may be issues.  
+4. **Dormant Customers**: A large cluster of customers has not purchased in over 3 years. Win-back campaigns can be attempted, but ROI may be low.  
+5. **Low-Spend One-Timers**: Largest segment, more recent than dormant customers. Represents an opportunity for targeted promotions to encourage repeat behavior.  
+6. **Operational Strength**: Fast delivery (within 48 hours) is a competitive advantage and should be emphasized in marketing.  
+7. **Churn Prediction**: Early churn detection enables proactive engagement, though the model requires improvement to reduce false churn predictions.  
 
 ---
 
 ## Recommendations
 
-- **Cluster 2 (High-Value Buyers):** Focus on retention, exclusive offers, and upselling.  
-- **Cluster 1 (Low-Spend One-Timers):** Targeted promotions and personalized recommendations to encourage repeat purchases.  
-- **Cluster 0 (High Returners):** Review return policies, consider stricter rules for high-return customers.  
-- **Cluster 3 (Lost Customers):** Low-priority, but selective win-back campaigns may revive a fraction.  
+- **High-Value Buyers (Cluster 2)**:  
+  - Implement loyalty programs and personalized recommendations.  
+  - Encourage cross-selling and upselling through tailored bundles.  
 
-For prediction models:  
-- **Repeat Buyer and High-Value models** are highly accurate and can be deployed for targeting campaigns.  
-- **Churn model** requires improvement (SMOTE, XGBoost, additional features), but already provides value in flagging at-risk customers.  
+- **Low-Spend One-Timers (Cluster 1)**:  
+  - Use targeted promotions and discounts to drive second purchases.  
+  - Introduce referral incentives to spread acquisition.  
+
+- **High Returners (Cluster 0)**:  
+  - Review return policies to reduce losses.  
+  - Consider adjusting marketing to reduce targeting of high-return segments.  
+
+- **Lost Customers (Cluster 3)**:  
+  - Limited focus, but selective win-back campaigns may reactivate some.  
+  - Consider exclusion from costly acquisition channels.  
+
+- **Product Strategy**:  
+  - Investigate *Jumpsuits & Rompers* and *Intimates* categories for quality or sizing issues.  
+  - Strengthen product detail pages to reduce mismatched expectations and returns.  
+
+- **Operations & Marketing**:  
+  - Emphasize fast delivery (1–2 days) in promotional messaging.  
+  - Use predictive models to preempt churn and target customers with retention offers.  
 
 ---
 
 ## Conclusion
-This project demonstrates how customer analytics can guide e-commerce strategy by combining **descriptive segmentation** with **predictive modeling**. By understanding who the customers are and anticipating their future behavior, businesses can allocate resources more effectively, personalize campaigns, and ultimately increase retention and profitability.  
+This project demonstrates how e-commerce companies can combine **customer segmentation** and **predictive modeling** to drive smarter strategy.  
+
+- **Segmentation** uncovered four distinct customer groups with clear business implications.  
+- **Prediction** models achieved strong performance for repeat buyer and high-value customers, while the churn model provided useful but limited insights.  
+- The analysis highlights specific opportunities in **customer retention, return management, and product strategy**.  
+
+By aligning analytics with business needs, e-commerce organizations can improve retention, increase revenue, and optimize marketing spend.  
+
+
+## Reference 
+
+[Ecommerce customer retention rate: definitions, formulas and benchmarks](https://loyaltylion.com/blog/customer-retention-rate)
